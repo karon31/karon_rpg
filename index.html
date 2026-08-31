@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b1020">
+<title>税理士試験 QUEST - Safari版</title>
+<style>
+:root{
+  --bg:#0b1020;--panel:#18213f;--panel2:#202b50;--line:#364878;
+  --text:#edf2ff;--muted:#aeb9da;--gold:#f2cf7a;--blue:#7ec0ff;
+  --green:#66d9a3;--red:#ff8f8f;--purple:#b494ff;--orange:#f0ad6b;
+  --safe-bottom:max(env(safe-area-inset-bottom),12px);
+  --safe-top:max(env(safe-area-inset-top),0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#080c18;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif}
+body{min-height:100vh}
+button,input,select{font:inherit}
+button{touch-action:manipulation}
+.app{
+  width:100%;max-width:480px;margin:0 auto;min-height:100vh;
+  background:
+   radial-gradient(circle at 12% 0%,rgba(126,192,255,.10),transparent 26%),
+   radial-gradient(circle at 88% 3%,rgba(180,148,255,.10),transparent 24%),
+   linear-gradient(180deg,#131a31,#0b1020 72%);
+  border-left:1px solid rgba(255,255,255,.04);
+  border-right:1px solid rgba(255,255,255,.04);
+}
+.top{
+  position:sticky;top:0;z-index:20;
+  padding:calc(12px + var(--safe-top)) 14px 12px;
+  background:rgba(9,13,27,.94);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+@supports ((-webkit-backdrop-filter:blur(10px)) or (backdrop-filter:blur(10px))){
+  .top,.bottom-nav,.sheet-backdrop{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand h1{margin:0;font-size:18px}
+.badge{font-size:10px;font-weight:800;color:#ffefbd;background:rgba(242,207,122,.12);border:1px solid rgba(242,207,122,.28);padding:5px 8px;border-radius:999px}
+.player{
+  margin-top:10px;display:grid;grid-template-columns:70px 1fr;gap:11px;align-items:center;
+  padding:11px;border-radius:18px;background:linear-gradient(180deg,#1d2850,#151d39);border:1px solid var(--line)
+}
+.avatar-box{width:70px;height:70px;border-radius:17px;background:#202b50;border:1px solid #46598e;display:grid;place-items:center}
+.hero{width:58px;height:66px;transform-origin:50% 80%}
+.hero.attack{animation:attack .35s ease}
+.hero.levelup{animation:level .8s ease}
+@keyframes attack{0%{transform:translateX(0)}45%{transform:translateX(9px) scale(1.05)}100%{transform:translateX(0)}}
+@keyframes level{0%{transform:translateY(0)}45%{transform:translateY(-7px) scale(1.08)}100%{transform:translateY(0)}}
+.name{font-size:10px;color:var(--muted)}
+.level{font-size:25px;font-weight:900;line-height:1}
+.xptext{font-size:10px;color:var(--muted);margin-top:5px}
+.bar,.mini,.hpbar{height:9px;background:#0f1530;border:1px solid #344471;border-radius:999px;overflow:hidden}
+.bar{margin-top:7px}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--gold),#ffe9af);width:0}
+.main{padding:13px 13px calc(92px + var(--safe-bottom))}
+.screen{display:none}
+.screen.active{display:block}
+.card{
+  background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);border-radius:18px;padding:14px
+}
+.card+.card{margin-top:12px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.head h2,.head h3{margin:0;font-size:16px}
+.head span{font-size:10px;color:var(--muted)}
+.note{font-size:12px;line-height:1.65;color:var(--muted);padding:10px 11px;border-radius:13px;background:#141d39;border:1px solid #334370}
+.quest-list,.subject-list,.enemy-list,.log-list{display:grid;gap:9px;margin-top:11px}
+.quest{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;
+  padding:11px;border-radius:14px;background:#151d39;border:1px solid #334370
+}
+.quest input{width:19px;height:19px;accent-color:var(--gold)}
+.quest.done{opacity:.62}
+.reward{font-size:10px;font-weight:800;color:#ffefbd;background:rgba(242,207,122,.13);border:1px solid rgba(242,207,122,.28);padding:4px 7px;border-radius:999px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+.btn{
+  border:0;border-radius:13px;min-height:44px;padding:10px 11px;font-weight:800;color:#0b1020
+}
+.btn.gold{background:var(--gold)}.btn.blue{background:var(--blue)}.btn.green{background:var(--green)}.btn.red{background:var(--red)}
+.btn.ghost{background:#243156;color:var(--text);border:1px solid #405384}
+.btn.full{grid-column:1/-1}
+.subject{display:grid;grid-template-columns:84px 1fr 60px;gap:8px;align-items:center}
+.subject b{font-size:11px}.subject .meta{font-size:9px;color:var(--muted);text-align:right}.mini span{display:block;height:100%}
+.subject:nth-child(1) .mini span{background:var(--blue)}.subject:nth-child(2) .mini span{background:var(--green)}
+.subject:nth-child(3) .mini span{background:var(--purple)}.subject:nth-child(4) .mini span{background:var(--orange)}.subject:nth-child(5) .mini span{background:var(--red)}
+.form{display:grid;gap:9px}
+.input,.select{width:100%;min-height:44px;padding:11px 12px;border-radius:13px;background:#0f1530;border:1px solid #405384;color:var(--text);font-size:16px}
+.enemy{
+  display:grid;grid-template-columns:52px 1fr;gap:10px;padding:10px;border-radius:15px;background:#151d39;border:1px solid #334370
+}
+.icon{width:52px;height:52px;border-radius:14px;background:#10162d;border:1px solid #334370;display:grid;place-items:center;font-size:26px}
+.enemy strong{display:block;font-size:12px}.enemy .meta{font-size:9px;color:var(--muted);margin-top:4px}
+.tag{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:800}
+.tag.live{color:#ffc2c2;background:rgba(255,143,143,.12);border:1px solid rgba(255,143,143,.25)}
+.tag.done{color:#c6f3de;background:rgba(102,217,163,.12);border:1px solid rgba(102,217,163,.25)}
+.enemy-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.enemy-actions .btn{min-height:38px;padding:8px 10px;font-size:11px;flex:1}
+.battle{
+  background:linear-gradient(180deg,#111a35,#0e1428);border:1px solid #32416d;border-radius:17px;padding:12px
+}
+.stage{height:220px;margin-top:10px;border-radius:14px;border:1px solid #31416c;position:relative;overflow:hidden;background:linear-gradient(180deg,#1a2750,#121a33 62%,#101628)}
+.stage:after{content:"";position:absolute;left:14px;right:14px;bottom:22px;height:24px;border-radius:50%;background:radial-gradient(circle at center,rgba(0,0,0,.38),transparent 70%)}
+.player-sprite,.enemy-sprite{position:absolute;bottom:42px;z-index:2}
+.player-sprite{left:18px}.enemy-sprite{right:20px}
+.player-sprite svg,.enemy-sprite svg{width:86px;height:96px}
+.player-sprite.attack{animation:playerAtk .3s ease}
+.enemy-sprite.hit{animation:enemyHit .35s ease}
+@keyframes playerAtk{0%{transform:translateX(0)}50%{transform:translateX(15px)}100%{transform:translateX(0)}}
+@keyframes enemyHit{0%{transform:translateX(0)}35%{transform:translateX(-10px);filter:brightness(1.3)}100%{transform:translateX(0);filter:none}}
+.damage{position:absolute;right:78px;top:52px;z-index:4;font-size:24px;font-weight:900;color:#ffe7a1;opacity:0}
+.damage.show{animation:dmg 1s ease}
+@keyframes dmg{0%{opacity:0;transform:translateY(8px)}20%{opacity:1}100%{opacity:0;transform:translateY(-35px)}}
+.battle-empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);font-size:12px;z-index:3;padding:24px}
+.hp-wrap{margin-top:10px}.hp-wrap label{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}.hpbar{height:11px}.hpbar span{display:block;height:100%;background:linear-gradient(90deg,var(--red),#ffb1b1);width:0}
+.hptext{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:5px}
+.log-item{padding:9px 10px;border-radius:13px;background:#141d39;border:1px solid #334370;font-size:11px;line-height:1.5}.log-item time{display:block;font-size:9px;color:var(--muted);margin-bottom:4px}
+.bottom-nav{
+  position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(480px,100%);
+  padding:9px 10px calc(9px + var(--safe-bottom));z-index:30;background:rgba(8,12,24,.94);border-top:1px solid rgba(255,255,255,.06)
+}
+.navrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.navbtn{min-height:54px;border:1px solid #30416d;background:#111936;color:var(--muted);border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;font-weight:800}
+.navbtn .ico{font-size:18px}.navbtn.active{background:#1b2648;color:var(--text);border-color:#49619e}
+.toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(10px);z-index:60;opacity:0;pointer-events:none;background:#151c34;color:#fff;border:1px solid #42548a;padding:10px 13px;border-radius:12px;font-size:12px;font-weight:800;transition:.2s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.sheet-backdrop{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
+.sheet-backdrop.show{display:flex}
+.sheet{width:100%;max-width:480px;margin:0 auto;background:#151d39;border:1px solid #3a4d80;border-radius:20px 20px 0 0;padding:16px 14px calc(16px + var(--safe-bottom))}
+.sheet h3{margin:0 0 10px;font-size:16px}.sheet p{margin:0 0 12px;color:var(--muted);font-size:11px}
+.sheet .subjects{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sheet .subjects button{min-height:46px}
+.empty{padding:18px;text-align:center;font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand">
+    <h1>税理士試験 QUEST</h1>
+    <span class="badge">Safari版</span>
+  </div>
+  <div class="player">
+    <div class="avatar-box">
+      <svg id="heroMini" class="hero" viewBox="0 0 100 115" aria-label="主人公">
+        <circle cx="50" cy="34" r="24" fill="#f1cfb3" stroke="#746b63" stroke-width="2"/>
+        <path d="M26 28 Q35 9 50 10 Q67 10 74 28 Q62 19 50 20 Q38 19 26 28Z" fill="#554e48"/>
+        <circle cx="41" cy="35" r="2.4" fill="#443d38"/><circle cx="59" cy="35" r="2.4" fill="#443d38"/>
+        <path d="M44 46 Q50 50 56 46" fill="none" stroke="#a57070" stroke-width="2" stroke-linecap="round"/>
+        <path d="M24 75 Q50 56 76 75 L82 109 H18Z" fill="#375f99" stroke="#746b63" stroke-width="2"/>
+        <rect x="35" y="73" width="30" height="26" rx="4" fill="#ffe6a4" stroke="#746b63" stroke-width="2"/>
+      </svg>
+    </div>
+    <div>
+      <div class="name">あなたのキャラ</div>
+      <div class="level">Lv.<span id="level">1</span></div>
+      <div class="xptext"><span id="xp">0</span> XP ・ 次まで <span id="next">100</span></div>
+      <div class="bar"><span id="xpbar"></span></div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <section id="home" class="screen active">
+    <div class="card">
+      <div class="head"><h2>今日のクエスト</h2><span>まず10分</span></div>
+      <div class="note">今日はゼロにしない。まず10分だけ始める。<br>「始めた」「つまずきを見つけた」「再挑戦した」ことにもXPが入ります。</div>
+      <div id="quests" class="quest-list"></div>
+      <div class="actions">
+        <button id="study20" class="btn blue" type="button">20分学習</button>
+        <button id="findEnemy" class="btn gold" type="button">敵発見</button>
+        <button id="retryWin" class="btn green full" type="button">再戦勝利</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="head"><h3>科目ステータス</h3><span>科目別XP</span></div>
+      <div id="subjects" class="subject-list"></div>
+    </div>
+  </section>
+
+  <section id="battle" class="screen">
+    <div class="card">
+      <div class="head"><h2>バトル</h2><span>実際にHPが減ります</span></div>
+      <div class="battle">
+        <div class="head" style="margin-bottom:0"><div><h3 id="battleName">未選択</h3><span id="battleMeta">敵を選択してください</span></div><button id="chooseEnemy" class="btn ghost" type="button" style="min-height:38px;padding:8px 10px;font-size:11px">敵を選ぶ</button></div>
+        <div class="stage">
+          <div id="battleEmpty" class="battle-empty">敵が選ばれていません。<br>「敵」タブで登録してから選択してください。</div>
+          <div id="playerSprite" class="player-sprite">
+            <svg viewBox="0 0 100 115">
+              <circle cx="50" cy="34" r="24" fill="#f1cfb3" stroke="#746b63" stroke-width="2"/>
+              <path d="M26 28 Q35 9 50 10 Q67 10 74 28 Q62 19 50 20 Q38 19 26 28Z" fill="#554e48"/>
+              <circle cx="41" cy="35" r="2.4" fill="#443d38"/><circle cx="59" cy="35" r="2.4" fill="#443d38"/>
+              <path d="M24 75 Q50 56 76 75 L82 109 H18Z" fill="#375f99" stroke="#746b63" stroke-width="2"/>
+              <path d="M73 55 L88 44 L83 60 L94 68 L79 68 L72 80 L67 65 L54 63Z" fill="#f2cf7a" stroke="#8d6f28" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div id="enemySprite" class="enemy-sprite" style="display:none">
+            <svg viewBox="0 0 100 100"><g id="enemyShape"></g></svg>
+          </div>
+          <div id="damage" class="damage">-8</div>
+        </div>
+        <div class="hp-wrap">
+          <label>敵HP</label>
+          <div class="hpbar"><span id="enemyHp"></span></div>
+          <div class="hptext"><span id="enemyHpText">0 / 0</span><span id="battleComment">勉強で攻撃しよう</span></div>
+        </div>
+        <div class="actions">
+          <button id="battleStudy" class="btn blue" type="button">10分勉強で攻撃</button>
+          <button id="battleAnalyze" class="btn gold" type="button">解説を確認</button>
+          <button id="battleFinish" class="btn green full" type="button">できた！討伐</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="enemies" class="screen">
+    <div class="card">
+      <div class="head"><h2>敵を登録</h2><span>苦手論点</span></div>
+      <form id="enemyForm" class="form">
+        <input id="enemyName" class="input" type="text" placeholder="例：簡易課税・事業区分" required>
+        <select id="enemySubject" class="select">
+          <option>簿記論</option><option>財表計算</option><option>財表理論</option><option>消費税計算</option><option>消費税理論</option>
+        </select>
+        <button class="btn gold" type="submit">敵を登録する +3XP</button>
+      </form>
+    </div>
+    <div class="card">
+      <div class="head"><h3>討伐リスト</h3><span id="enemyCount">0体</span></div>
+      <div id="enemyList" class="enemy-list"></div>
+    </div>
+  </section>
+
+  <section id="log" class="screen">
+    <div class="card">
+      <div class="head"><h2>冒険ログ</h2><span>記録は残ります</span></div>
+      <div class="note">「また間違えた」は敗北ではなく、再戦クエストが発生したということ。</div>
+      <div id="logList" class="log-list"></div>
+      <div class="actions"><button id="reset" class="btn red full" type="button">サンプルを初期化</button></div>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <div class="navrow">
+    <button class="navbtn active" data-tab="home" type="button"><span class="ico">🏠</span>ホーム</button>
+    <button class="navbtn" data-tab="battle" type="button"><span class="ico">⚔️</span>バトル</button>
+    <button class="navbtn" data-tab="enemies" type="button"><span class="ico">👾</span>敵</button>
+    <button class="navbtn" data-tab="log" type="button"><span class="ico">📜</span>ログ</button>
+  </div>
+</nav>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="subjectSheet" class="sheet-backdrop" aria-hidden="true">
+  <div class="sheet">
+    <h3 id="sheetTitle">科目を選択</h3>
+    <p>選んだ科目にXPを加算します。</p>
+    <div class="subjects" id="sheetSubjects"></div>
+    <button id="sheetCancel" class="btn ghost" type="button" style="width:100%;margin-top:10px">キャンセル</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var SUBJECTS=['簿記論','財表計算','財表理論','消費税計算','消費税理論'];
+var KEY='zeirishiQuestSafariV02';
+var state={
+  xp:0,
+  subjectXp:{'簿記論':0,'財表計算':0,'財表理論':0,'消費税計算':0,'消費税理論':0},
+  quests:{start:false,output:false,retry:false},
+  enemies:[],
+  log:[],
+  activeEnemyId:null
+};
+var storageOK=true;
+var pendingSubjectAction=null;
+
+function byId(id){return document.getElementById(id)}
+function clone(obj){return JSON.parse(JSON.stringify(obj))}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
+function now(){return new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+function level(xp){return Math.floor(xp/100)+1}
+function makeId(){return 'e_'+Date.now()+'_'+Math.floor(Math.random()*1000000)}
+
+function load(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(!raw)return;
+    var d=JSON.parse(raw);
+    state.xp=Number(d.xp)||0;
+    state.subjectXp=Object.assign({},state.subjectXp,d.subjectXp||{});
+    state.quests=Object.assign({},state.quests,d.quests||{});
+    state.enemies=Array.isArray(d.enemies)?d.enemies:[];
+    state.log=Array.isArray(d.log)?d.log:[];
+    state.activeEnemyId=d.activeEnemyId||null;
+  }catch(e){storageOK=false}
+}
+function save(){
+  if(storageOK){
+    try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){storageOK=false}
+  }
+  render();
+}
+function addLog(text){
+  state.log.unshift({time:now(),text:text});
+  if(state.log.length>80)state.log.length=80;
+}
+function toast(msg){
+  var t=byId('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(window.__ztimer);window.__ztimer=setTimeout(function(){t.classList.remove('show')},1500)
+}
+function animateHero(kind){
+  var h=byId('heroMini');h.classList.remove('attack','levelup');void h.offsetWidth;h.classList.add(kind||'attack')
+}
+function gain(amount,subject,label){
+  var before=level(state.xp);
+  state.xp+=amount;
+  if(subject&&SUBJECTS.indexOf(subject)>=0)state.subjectXp[subject]=(state.subjectXp[subject]||0)+amount;
+  addLog(label+'（+'+amount+'XP）');
+  save();
+  animateHero('attack');
+  toast(label+' +'+amount+'XP');
+  if(level(state.xp)>before){
+    setTimeout(function(){animateHero('levelup');toast('レベルアップ！ Lv.'+level(state.xp))},220)
+  }
+}
+function selectSubject(title,callback){
+  pendingSubjectAction=callback;byId('sheetTitle').textContent=title;
+  byId('subjectSheet').classList.add('show');byId('subjectSheet').setAttribute('aria-hidden','false')
+}
+function closeSheet(){
+  pendingSubjectAction=null;byId('subjectSheet').classList.remove('show');byId('subjectSheet').setAttribute('aria-hidden','true')
+}
+function switchTab(name){
+  var screens=document.querySelectorAll('.screen');for(var i=0;i<screens.length;i++)screens[i].classList.remove('active');
+  var navs=document.querySelectorAll('.navbtn');for(var j=0;j<navs.length;j++)navs[j].classList.remove('active');
+  byId(name).classList.add('active');
+  var btn=document.querySelector('.navbtn[data-tab="'+name+'"]');if(btn)btn.classList.add('active');
+  window.scrollTo(0,0)
+}
+function activeEnemy(){
+  for(var i=0;i<state.enemies.length;i++)if(state.enemies[i].id===state.activeEnemyId)return state.enemies[i];
+  return null
+}
+function enemySvg(subject){
+  if(subject==='簿記論')return '<rect x="25" y="38" width="50" height="38" rx="12" fill="#7ec0ff" stroke="#4d658d" stroke-width="3"/><circle cx="40" cy="51" r="4" fill="#20304f"/><circle cx="60" cy="51" r="4" fill="#20304f"/><path d="M42 65 Q50 71 58 65" fill="none" stroke="#20304f" stroke-width="3"/><path d="M31 38 L38 22 L45 38 M69 38 L62 22 L55 38" fill="#7ec0ff" stroke="#4d658d" stroke-width="3"/>';
+  if(subject==='財表計算'||subject==='財表理論')return '<ellipse cx="50" cy="53" rx="29" ry="31" fill="#b494ff" stroke="#695790" stroke-width="3"/><circle cx="39" cy="50" r="8" fill="#f7f3ff" stroke="#695790" stroke-width="2"/><circle cx="61" cy="50" r="8" fill="#f7f3ff" stroke="#695790" stroke-width="2"/><circle cx="39" cy="50" r="2.7" fill="#2b2441"/><circle cx="61" cy="50" r="2.7" fill="#2b2441"/><path d="M25 37 L33 18 L42 34 M75 37 L67 18 L58 34" fill="#b494ff" stroke="#695790" stroke-width="3"/>';
+  return '<path d="M25 43 L32 14 L48 33 Q50 31 52 33 L68 14 L75 43 Q79 50 76 62 Q71 78 50 82 Q29 78 24 62 Q21 50 25 43Z" fill="#f0ad6b" stroke="#8a603d" stroke-width="3"/><circle cx="40" cy="50" r="3" fill="#32231a"/><circle cx="60" cy="50" r="3" fill="#32231a"/><rect x="34" y="73" width="32" height="16" rx="4" fill="#f2cf7a" stroke="#8d6f28" stroke-width="2"/>'
+}
+function enemyIcon(subject,index){
+  var map={'簿記論':['🧮','⚙️'],'財表計算':['📊','📐'],'財表理論':['📚','🔮'],'消費税計算':['🦊','🧾'],'消費税理論':['⚖️','👑']};
+  var arr=map[subject]||['👾'];return arr[index%arr.length]
+}
+function showDamage(n){
+  var d=byId('damage');d.textContent='-'+n;d.classList.remove('show');void d.offsetWidth;d.classList.add('show')
+}
+function animateBattle(){
+  var p=byId('playerSprite'),e=byId('enemySprite');
+  p.classList.remove('attack');e.classList.remove('hit');void p.offsetWidth;void e.offsetWidth;p.classList.add('attack');e.classList.add('hit')
+}
+function attack(mode){
+  var e=activeEnemy();if(!e){toast('先に敵を選んでください');return}
+  if(e.defeated){toast('この敵は討伐済みです');return}
+  var dmg=0,xp=0,label='';
+  if(mode==='study'){dmg=8+Math.floor(Math.random()*5);xp=8;label='10分勉強で攻撃'}
+  else if(mode==='analyze'){dmg=4+Math.floor(Math.random()*4);xp=5;label='解説を確認'}
+  else{dmg=e.hp;xp=15;label='討伐成功'}
+  e.tries+=1;e.hp=Math.max(0,e.hp-dmg);if(e.hp===0)e.defeated=true;
+  showDamage(dmg);animateBattle();
+  state.xp+=xp;state.subjectXp[e.subject]=(state.subjectXp[e.subject]||0)+xp;
+  addLog(e.name+'：'+label+'（+'+xp+'XP）');
+  save();
+  toast(e.defeated?'討伐成功！ '+e.name:e.name+' に '+dmg+' ダメージ')
+}
+function setQuest(key,checked){
+  var r={start:5,output:10,retry:15},l={start:'勉強を開始',output:'アウトプット1回',retry:'再挑戦'};
+  if(checked&&!state.quests[key]){state.quests[key]=true;gain(r[key],null,l[key])}
+  else if(!checked&&state.quests[key]){state.quests[key]=false;state.xp=Math.max(0,state.xp-r[key]);addLog('クエスト取消：'+l[key]);save()}
+}
+function render(){
+  var lv=level(state.xp),cur=state.xp%100;
+  byId('level').textContent=lv;byId('xp').textContent=state.xp;byId('next').textContent=100-cur;byId('xpbar').style.width=cur+'%';
+
+  var q=[['start','勉強を始める','5XP'],['output','アウトプットを1回','10XP'],['retry','敵に再挑戦','15XP']];
+  byId('quests').innerHTML=q.map(function(x){return '<label class="quest '+(state.quests[x[0]]?'done':'')+'"><input type="checkbox" data-q="'+x[0]+'" '+(state.quests[x[0]]?'checked':'')+'><span>'+x[1]+'</span><span class="reward">'+x[2]+'</span></label>'}).join('');
+  var qinputs=document.querySelectorAll('[data-q]');for(var i=0;i<qinputs.length;i++)qinputs[i].addEventListener('change',function(ev){setQuest(ev.target.getAttribute('data-q'),ev.target.checked)});
+
+  byId('subjects').innerHTML=SUBJECTS.map(function(s){var x=state.subjectXp[s]||0;return '<div class="subject"><b>'+s+'</b><div class="mini"><span style="width:'+(x%100)+'%"></span></div><div class="meta">Lv.'+level(x)+'<br>'+x+'XP</div></div>'}).join('');
+
+  byId('enemyCount').textContent=state.enemies.length+'体';
+  if(!state.enemies.length){byId('enemyList').innerHTML='<div class="empty">まだ敵はいません。<br>苦手論点を1つ登録してみましょう。</div>'}
+  else{
+    byId('enemyList').innerHTML=state.enemies.map(function(e,idx){
+      return '<div class="enemy"><div class="icon">'+enemyIcon(e.subject,idx)+'</div><div><strong>'+esc(e.name)+'</strong><div class="meta">'+e.subject+' ・ 挑戦 '+e.tries+'回 ・ HP '+e.hp+'/'+e.maxHp+'</div><span class="tag '+(e.defeated?'done':'live')+'">'+(e.defeated?'討伐済み':'未討伐')+'</span><div class="enemy-actions"><button class="btn ghost" type="button" data-select="'+e.id+'">バトルへ</button><button class="btn red" type="button" data-del="'+e.id+'">削除</button></div></div></div>'
+    }).join('');
+    var selects=document.querySelectorAll('[data-select]');for(var s=0;s<selects.length;s++)selects[s].addEventListener('click',function(){state.activeEnemyId=this.getAttribute('data-select');save();switchTab('battle')});
+    var dels=document.querySelectorAll('[data-del]');for(var d=0;d<dels.length;d++)dels[d].addEventListener('click',function(){var id=this.getAttribute('data-del');state.enemies=state.enemies.filter(function(e){return e.id!==id});if(state.activeEnemyId===id)state.activeEnemyId=null;save()})
+  }
+
+  var e=activeEnemy();
+  if(!e){
+    byId('battleName').textContent='未選択';byId('battleMeta').textContent='敵を選択してください';byId('battleEmpty').style.display='grid';byId('enemySprite').style.display='none';byId('enemyHp').style.width='0%';byId('enemyHpText').textContent='0 / 0';byId('battleComment').textContent='勉強で攻撃しよう'
+  }else{
+    byId('battleName').textContent=e.name;byId('battleMeta').textContent=e.subject+' ・ 挑戦 '+e.tries+'回';byId('battleEmpty').style.display='none';byId('enemySprite').style.display='block';byId('enemyShape').innerHTML=enemySvg(e.subject);
+    var pct=e.maxHp?Math.round(e.hp/e.maxHp*100):0;byId('enemyHp').style.width=pct+'%';byId('enemyHpText').textContent=e.hp+' / '+e.maxHp;byId('battleComment').textContent=e.defeated?'討伐完了！':(pct>60?'まずは一撃ずつ':pct>25?'かなり削れています':'あと少し！')
+  }
+
+  if(!state.log.length)byId('logList').innerHTML='<div class="empty">まだ冒険ログはありません。</div>';
+  else byId('logList').innerHTML=state.log.map(function(x){return '<div class="log-item"><time>'+x.time+'</time>'+esc(x.text)+'</div>'}).join('')
+}
+function buildSheet(){
+  byId('sheetSubjects').innerHTML=SUBJECTS.map(function(s){return '<button class="btn ghost" type="button" data-subject="'+s+'">'+s+'</button>'}).join('');
+  var bs=document.querySelectorAll('[data-subject]');for(var i=0;i<bs.length;i++)bs[i].addEventListener('click',function(){var s=this.getAttribute('data-subject');var cb=pendingSubjectAction;closeSheet();if(cb)cb(s)})
+}
+function init(){
+  load();buildSheet();render();
+
+  var navs=document.querySelectorAll('.navbtn');for(var i=0;i<navs.length;i++)navs[i].addEventListener('click',function(){switchTab(this.getAttribute('data-tab'))});
+
+  byId('study20').addEventListener('click',function(){selectSubject('20分学習した科目',function(s){gain(10,s,s+'を20分学習')})});
+  byId('findEnemy').addEventListener('click',function(){gain(3,null,'敵を発見')});
+  byId('retryWin').addEventListener('click',function(){selectSubject('再戦勝利した科目',function(s){gain(15,s,s+'で再戦勝利')})});
+
+  byId('enemyForm').addEventListener('submit',function(ev){
+    ev.preventDefault();var name=byId('enemyName').value.trim(),sub=byId('enemySubject').value;if(!name)return;
+    var max=30+Math.floor(Math.random()*21);var obj={id:makeId(),name:name,subject:sub,tries:1,defeated:false,maxHp:max,hp:max};
+    state.enemies.unshift(obj);if(!state.activeEnemyId)state.activeEnemyId=obj.id;byId('enemyName').value='';gain(3,sub,'敵登録：'+name)
+  });
+
+  byId('chooseEnemy').addEventListener('click',function(){if(state.enemies.length){state.activeEnemyId=state.enemies[0].id;save()}else{toast('まず敵を登録してください');switchTab('enemies')}});
+  byId('battleStudy').addEventListener('click',function(){attack('study')});
+  byId('battleAnalyze').addEventListener('click',function(){attack('analyze')});
+  byId('battleFinish').addEventListener('click',function(){attack('finish')});
+  byId('sheetCancel').addEventListener('click',closeSheet);
+  byId('subjectSheet').addEventListener('click',function(ev){if(ev.target===this)closeSheet()});
+  byId('reset').addEventListener('click',function(){if(confirm('サンプルデータを初期化しますか？')){state=clone({xp:0,subjectXp:{'簿記論':0,'財表計算':0,'財表理論':0,'消費税計算':0,'消費税理論':0},quests:{start:false,output:false,retry:false},enemies:[],log:[],activeEnemyId:null});try{localStorage.removeItem(KEY)}catch(e){}render()}});
+
+  if(!storageOK)toast('Safariの設定により保存は一時的です');
+}
+init();
+})();
+</script>
+</body>
+</html>
